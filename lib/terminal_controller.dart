@@ -281,6 +281,49 @@ class HomeController extends GetxController {
     // pseudoTerminal.writeString('bash\n');
   }
 
+  /// Initialize environment only (Ubuntu + proot-distro + Nginx)
+  /// This is a generic initialization without VSCode-specific logic
+  Future<void> initEnvironmentOnly() async {
+    step = 7; // Fewer steps for generic init
+    bumpProgress();
+    // Create folders
+    Directory(RuntimeEnvir.tmpPath).createSync(recursive: true);
+    Directory(RuntimeEnvir.homePath).createSync(recursive: true);
+    Directory(RuntimeEnvir.binPath).createSync(recursive: true);
+    bumpProgress();
+    await initEnvir();
+    bumpProgress();
+    // Create terminal
+    setProgress('Creating terminal...');
+    pseudoTerminal = createPTY(rows: terminal.viewHeight, columns: terminal.viewWidth);
+    bumpProgress();
+    // Copy proot-distro
+    setProgress('Copying proot-distro...');
+    await AssetsUtils.copyAssetToPath('assets/proot-distro.zip', '${RuntimeEnvir.homePath}/proot-distro.zip');
+    bumpProgress();
+    // Copy Ubuntu
+    setProgress('Copying Ubuntu...');
+    await AssetsUtils.copyAssetToPath('assets/${Config.ubuntuFileName}', '${RuntimeEnvir.homePath}/${Config.ubuntuFileName}');
+    bumpProgress();
+    // Create busybox links
+    setProgress('Creating busybox symlinks...');
+    createBusyboxLink();
+    bumpProgress();
+    // Write initialization script
+    File('${RuntimeEnvir.homePath}/init.sh').writeAsStringSync(initEnvironment);
+    // Run initialization
+    pseudoTerminal!.writeString('source ${RuntimeEnvir.homePath}/init.sh\ninit_environment\n');
+    bumpProgress();
+  }
+
+  /// Start a shell session directly (no VSCode)
+  Future<void> startShell() async {
+    if (pseudoTerminal == null) {
+      await initEnvironmentOnly();
+    }
+    pseudoTerminal!.writeString('login_ubuntu_shell\n');
+  }
+
   @override
   void onInit() {
     super.onInit();

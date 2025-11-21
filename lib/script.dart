@@ -1,6 +1,7 @@
 import 'package:global_repository/global_repository.dart';
 import 'config.dart';
 import 'generated/l10n.dart';
+import 'managers/nginx_manager.dart';
 
 // proot distro，ubuntu path
 String prootDistroPath = '${RuntimeEnvir.usrPath}/var/lib/proot-distro';
@@ -37,6 +38,9 @@ bump_progress(){
   printf "\$next" > "\$TMPDIR/progress"
 }
 ''';
+
+// Install Nginx for reverse proxy support
+String installNginx = NginxManager().generateInstallScript();
 
 // 切换到清华源
 // Switch to Tsinghua source
@@ -91,8 +95,11 @@ install_ubuntu(){
     echo
     mv $UBUNTU_PATH/$UBUNTU_NAME/* $UBUNTU_PATH/
     rm -rf $UBUNTU_PATH/$UBUNTU_NAME
-    echo 'export PATH=/opt/code-server-$CSVERSION-linux-arm64/bin:$PATH' >> $UBUNTU_PATH/root/.bashrc
+    # Generic setup for all apps
+    echo 'export PATH=/opt/apps/bin:$PATH' >> $UBUNTU_PATH/root/.bashrc
     echo 'export ANDROID_DATA=/home/' >> $UBUNTU_PATH/root/.bashrc
+    # VSCode legacy support
+    echo 'export PATH=/opt/code-server-$CSVERSION-linux-arm64/bin:$PATH' >> $UBUNTU_PATH/root/.bashrc
   else
     VERSION=`cat $UBUNTU_PATH/etc/issue.net 2>/dev/null`
     # VERSION=`cat $UBUNTU_PATH/etc/issue 2>/dev/null | sed 's/\\n//g' | sed 's/\\l//g'`
@@ -172,6 +179,36 @@ login_ubuntu(){
 }
 ''';
 
+// Generic script to login to Ubuntu shell
+String loginUbuntuShell = r'''
+login_ubuntu_shell(){
+  bash $BIN/proot-distro login --bind /storage/emulated/0:/sdcard/ ubuntu --isolated
+}
+''';
+
+// Initialize environment (proot-distro and ubuntu)
+String initEnvironment = '''
+$common
+$changeUbuntuNobleSource
+$installUbuntu
+$installProotDistro
+$installNginx
+$loginUbuntuShell
+clear_lines
+init_environment(){
+  install_proot_distro
+  sleep 1
+  bump_progress
+  install_ubuntu
+  sleep 1
+  bump_progress
+  install_nginx
+  sleep 1
+  bump_progress
+}
+''';
+
+// Legacy VSCode support - kept for backward compatibility
 String commonScript = '''
 $common
 $changeUbuntuNobleSource
