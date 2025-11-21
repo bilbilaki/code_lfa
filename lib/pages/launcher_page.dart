@@ -222,12 +222,18 @@ class _LauncherPageState extends State<LauncherPage> {
       return;
     }
 
-    // TODO: Implement app launch logic
+    // App launch logic requires PTY integration with terminal controller
+    // This will be fully implemented when the environment is initialized
     Get.snackbar(
-      'Launching',
-      'Starting ${app.name}...',
+      'Not Implemented',
+      'App launching requires environment initialization. Use the Terminal to manually launch apps for now.',
       snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 4),
     );
+    // Future implementation will:
+    // 1. Check if PTY/environment is initialized
+    // 2. Call AppManager().launchApp(pty, app.id)
+    // 3. Open WebView if nginx config exists
   }
 
   void _showAppOptions(LinuxApp app) {

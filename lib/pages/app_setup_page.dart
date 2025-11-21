@@ -356,8 +356,9 @@ class _AppSetupPageState extends State<AppSetupPage> {
   }
 
   void _selectArchiveFile() {
-    // For now, show a dialog with manual path entry
-    // In a real implementation, you might use file_picker package
+    // Manual path entry for file selection
+    // Note: A full file picker implementation would require adding file_picker dependency
+    // For simplicity, we use manual path entry which works well for advanced users
     final pathController = TextEditingController();
     
     showDialog(

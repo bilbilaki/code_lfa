@@ -40,7 +40,8 @@ bump_progress(){
 ''';
 
 // Install Nginx for reverse proxy support
-String installNginx = NginxManager().generateInstallScript();
+final _nginxManager = NginxManager();
+String get installNginx => _nginxManager.generateInstallScript();
 
 // 切换到清华源
 // Switch to Tsinghua source

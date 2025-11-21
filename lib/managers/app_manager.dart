@@ -195,8 +195,10 @@ class AppManager {
         
         // Preserve file permissions if available
         if (file.mode != null) {
-          // Set executable bit if needed
-          if (file.mode! & 0x49 != 0) { // Check if any execute bit is set
+          // Check if any execute bit is set (owner, group, or other)
+          // 0x49 = 0b001001001 (execute bits for owner, group, other)
+          const int executableBitsMask = 0x49;
+          if (file.mode! & executableBitsMask != 0) {
             await Process.run('chmod', ['+x', outFile.path]);
           }
         }

@@ -281,10 +281,13 @@ class HomeController extends GetxController {
     // pseudoTerminal.writeString('bash\n');
   }
 
+  // Number of steps for generic environment initialization
+  static const int _genericInitSteps = 7;
+
   /// Initialize environment only (Ubuntu + proot-distro + Nginx)
   /// This is a generic initialization without VSCode-specific logic
   Future<void> initEnvironmentOnly() async {
-    step = 7; // Fewer steps for generic init
+    step = _genericInitSteps;
     bumpProgress();
     // Create folders
     Directory(RuntimeEnvir.tmpPath).createSync(recursive: true);
